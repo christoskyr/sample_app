@@ -1,5 +1,6 @@
 class UsersController < ApplicationController
-  before_action :signed_in_user, only: [:index, :edit, :update, :destroy]
+  before_action :signed_in_user,
+                only: [:index, :edit, :update, :destroy, :following, :followers]
   before_action :correct_user,   only: [:edit, :update]
   before_action :admin_user,     only: :destroy
 
@@ -13,10 +14,10 @@ class UsersController < ApplicationController
   end
 
   def new
-  	 @user = User.new
+  	@user = User.new
   end
 
-   def create
+  def create
     @user = User.new(user_params)
     if @user.save
       sign_in @user
@@ -45,8 +46,21 @@ class UsersController < ApplicationController
     end
   end
 
-  private
+  def following
+    @title = "Following"
+    @user = User.find(params[:id])
+    @users = @user.followed_users.paginate(page: params[:page])
+    render 'show_follow'
+  end
 
+  def followers
+    @title = "Followers"
+    @user = User.find(params[:id])
+    @users = @user.followers.paginate(page: params[:page])
+    render 'show_follow'
+  end
+
+  private 
     def user_params
       params.require(:user).permit(:name, :email, :password,
                                    :password_confirmation)
@@ -63,4 +77,3 @@ class UsersController < ApplicationController
       redirect_to(root_url) unless current_user.admin?
     end
 end
-
